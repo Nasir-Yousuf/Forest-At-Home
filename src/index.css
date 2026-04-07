@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom Forest Colors */
+  --color-forest-dark: #1e3b2a;
+  --color-forest-deep: #122a1e;
+  --color-forest-muted: #3a6b53;
+  --color-garden-bg: #fcfaf6;
+  --color-accent-tan: #f7d299;
+
+  /* Fonts */
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-garden-bg text-forest-dark font-sans antialiased overflow-x-hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif;
+  }
+}
+
+/* Custom smooth scrollbar for premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-forest-dark/20 rounded-full hover:bg-forest-dark/40 transition-colors;
+}
