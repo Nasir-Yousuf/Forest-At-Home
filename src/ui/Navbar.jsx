@@ -20,7 +20,7 @@ const Navbar = () => {
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
     }
-  }, [location.pathname, isMobileMenuOpen]);
+  }, [location.pathname]);
 
   const fadeUp = `transition-all duration-1000 ease-out ${
     isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6"
