@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ShoppingBag, User, Menu, X } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { selectCartCount } from "../features/cart/cartSlice";
+import { selectUser, logout } from "../features/auth/authSlice";
 
 const Navbar = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const cartCount = useSelector(selectCartCount);
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    dispatch(logout());
+  };
 
   // Handle the initial fade-in animation
   useEffect(() => {
@@ -55,6 +66,14 @@ const Navbar = () => {
           >
             Collections
           </Link>
+          {user && user.role === "admin" && (
+            <Link
+              to="/admin"
+              className={`transition-colors ${isActive("/admin") ? "text-[#1a3c28] border-b-2 border-[#1a3c28] pb-1" : "text-[#1a3c28]/70 hover:text-[#1a3c28]"}`}
+            >
+              Admin
+            </Link>
+          )}
         </div>
 
         {/* Icons & Mobile Toggle */}
@@ -63,18 +82,38 @@ const Navbar = () => {
         >
           <Link
             to="/cart"
-            className="hover:opacity-70 transition-opacity"
+            className="relative hover:opacity-70 transition-opacity"
             aria-label="Cart"
           >
             <ShoppingBag size={20} />
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-green-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none shadow-sm">
+                {cartCount > 9 ? "9+" : cartCount}
+              </span>
+            )}
           </Link>
-          <Link
-            to="/login"
-            className="bg-white/80 backdrop-blur-md text-[#1a3c28] rounded-full p-1 shadow-sm hover:shadow-md transition-shadow hidden md:block"
-            aria-label="Profile"
-          >
-            <User size={20} />
-          </Link>
+          {user ? (
+            <div className="hidden md:flex items-center space-x-3 bg-white/80 backdrop-blur-md rounded-full px-4 py-1 shadow-sm">
+              <span className="text-xs font-bold text-[#1a3c28]">
+                {user.name.split(" ")[0]}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-[10px] uppercase font-bold text-red-500 hover:text-red-700 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="bg-white/80 backdrop-blur-md text-[#1a3c28] rounded-full p-1 shadow-sm hover:shadow-md transition-shadow hidden md:block"
+              aria-label="Profile"
+            >
+              <User size={20} />
+            </Link>
+          )}
 
           <button
             className="md:hidden p-1 hover:opacity-70 transition-opacity"
@@ -108,6 +147,39 @@ const Navbar = () => {
           >
             Collections
           </Link>
+          
+          {user && user.role === "admin" && (
+            <Link
+              to="/admin"
+              className={
+                isActive("/admin") ? "text-[#1a3c28]" : "text-[#1a3c28]/70"
+              }
+            >
+              Admin
+            </Link>
+          )}
+
+          {user ? (
+            <div className="flex flex-col items-center mt-4">
+              <span className="text-xs font-bold text-[#1a3c28] mb-2">
+                Logged in as {user.name}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-[10px] uppercase font-bold text-red-500"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="text-[#1a3c28]/70 mt-4"
+            >
+              Login
+            </Link>
+          )}
 
           {/* Into the Wild Easter Egg / Quote Placeholder */}
           <div className="pt-8 border-t border-[#1a3c28]/10 w-2/3 text-center">

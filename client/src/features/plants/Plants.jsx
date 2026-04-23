@@ -1,98 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, Minus, ShoppingBag } from "lucide-react";
+import { Plus, Minus, ShoppingBag, Check } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { addToCart } from "./../../features/cart/cartSlice";
+import { useNavigate } from "react-router-dom";
 
-const PLANTS_DATA = [
-  {
-    id: "MON-042",
-    name: "Monstera Deliciosa",
-    price: 85.0,
-    description:
-      "Natural air purifier. Reduces airborne toxins by 40% in residential spaces. Architectural presence for any interior.",
-    image:
-      "https://images.unsplash.com/photo-1614594975525-e45190c55d40?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "SAN-019",
-    name: "Snake Plant",
-    price: 64.0,
-    description:
-      "Highly resilient desert species. Ideal for bedroom oxygen conversion. Requires minimal water and light.",
-    image:
-      "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "FIC-088",
-    name: "Fiddle Leaf Fig",
-    price: 120.0,
-    description:
-      "Premium architectural specimen. Large broad leaves optimized for photosynthesis. A focal piece for high-ceilings.",
-    image:
-      "https://images.unsplash.com/photo-1508209867087-b9f48f430635?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "POT-112",
-    name: "Golden Pothos",
-    price: 35.0,
-    description:
-      "Adaptable trailing plant. Rapid growth rate and exceptionally efficient at filtering formaldehyde from the air.",
-    image:
-      "https://images.unsplash.com/photo-1463936575829-25148e1db1b8?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "ZAM-201",
-    name: "ZZ Plant",
-    price: 55.0,
-    description:
-      "Extreme resilience. Thrives on neglect with structural, glossy leaves that reflect ambient indoor lighting.",
-    image:
-      "https://images.unsplash.com/photo-1632207691143-643e2a9a9361?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "SPA-305",
-    name: "Peace Lily",
-    price: 70.0,
-    description:
-      "Elegant white blooms that act as natural indicators of thirst. Powerful bio-filter for mold spores and VOCs.",
-    image:
-      "https://images.unsplash.com/photo-1593696954577-ab3d39317b97?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "STR-421",
-    name: "Bird of Paradise",
-    price: 150.0,
-    description:
-      "Stunning tropical canopy plant. Massive paddle leaves provide high transpiration rates, naturally humidifying spaces.",
-    image:
-      "https://images.unsplash.com/photo-1611211232932-da3113c5b960?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "ELA-503",
-    name: "Rubber Tree",
-    price: 95.0,
-    description:
-      "Deep burgundy foliage with a robust structure. Effective at removing toxins and requires minimal maintenance.",
-    image:
-      "https://images.unsplash.com/photo-1612363148951-15f16817648f?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "NEP-617",
-    name: "Boston Fern",
-    price: 40.0,
-    description:
-      "Delicately feathery fronds. Superior at adding humidity to dry indoor environments and filtering out common toxins.",
-    image:
-      "https://images.unsplash.com/photo-1599598425947-33002620660b?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "CAL-782",
-    name: "Calathea Ornata",
-    price: 60.0,
-    description:
-      "Intricate patterned leaves. A dynamic plant whose leaves rise and fall with the diurnal cycle. Prefers humidity.",
-    image:
-      "https://images.unsplash.com/photo-1600411833196-7c1f6b1a8b90?auto=format&fit=crop&q=80&w=800",
-  },
-];
+
 
 // ==========================================
 //   HOOKS
@@ -182,6 +94,9 @@ function QuantitySelector({ quantity, onIncrease, onDecrease }) {
 function PlantCard({ plant, index }) {
   const [ref, isVisible] = useScrollReveal();
   const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   function handleDecrease() {
     setQuantity((prev) => Math.max(1, prev - 1));
@@ -192,13 +107,24 @@ function PlantCard({ plant, index }) {
   }
 
   function handleAddToCart() {
-    console.log(`Added ${quantity} of ${plant.name} to cart.`);
+    dispatch(
+      addToCart({
+        id: plant._id || plant.id,
+        name: plant.name,
+        price: plant.isFree ? 0 : plant.price,
+        image: plant.image,
+        quantity,
+        scientific: plant.scientificName || plant.id,
+        subtitle: plant.description?.substring(0, 50) + "...",
+      })
+    );
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
   }
 
   return (
     <article
       ref={ref}
-      // Restored comfortable padding p-4 md:p-5
       className={`group w-full max-w-[340px] mx-auto sm:max-w-none flex flex-col bg-white p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-transparent hover:border-gray-100 hover:shadow-[0_24px_50px_-12px_rgba(26,60,40,0.18)] transition-all duration-500 ease-out opacity-0 translate-y-8 ${
         isVisible ? "opacity-100 translate-y-0" : ""
       }`}
@@ -207,7 +133,7 @@ function PlantCard({ plant, index }) {
       {/* 10% SHORTER: aspect-[10/9] creates a very subtle horizontal rectangle instead of a perfect square */}
       <div className="relative w-full aspect-[10/9] bg-[#f4f7f5] rounded-2xl md:rounded-3xl overflow-hidden mb-5 md:mb-6">
         <div className="absolute top-3 right-3 md:top-4 md:right-4 z-10 bg-white/90 backdrop-blur-md px-2.5 py-1 md:px-3 md:py-1.5 rounded-full shadow-sm text-[8px] md:text-[9px] font-bold tracking-widest text-[#1a3c28] uppercase transition-transform duration-500 group-hover:scale-105">
-          ID: {plant.id}
+          {plant.isFree ? "FREE" : `ID: ${plant._id?.slice(-4) || plant.id?.slice(-4)}`}
         </div>
         <img
           src={plant.image}
@@ -223,7 +149,7 @@ function PlantCard({ plant, index }) {
             {plant.name}
           </h3>
           <p className="text-base md:text-lg text-[#2b593f] font-semibold tracking-tight">
-            ${plant.price.toFixed(2)}
+            {plant.isFree ? "FREE" : `৳${plant.price?.toFixed(2)}`}
           </p>
         </header>
 
@@ -240,10 +166,23 @@ function PlantCard({ plant, index }) {
           />
           <button
             onClick={handleAddToCart}
-            className="flex-1 w-full bg-[#1a3c28] text-white rounded-xl py-2.5 md:py-3.5 px-4 flex items-center justify-center gap-2 font-medium text-sm hover:bg-[#112d20] transition-colors active:scale-[0.98]"
+            className={`flex-1 w-full rounded-xl py-2.5 md:py-3.5 px-4 flex items-center justify-center gap-2 font-medium text-sm transition-all duration-300 active:scale-[0.98] ${
+              added
+                ? "bg-green-600 text-white"
+                : "bg-[#1a3c28] text-white hover:bg-[#112d20]"
+            }`}
           >
-            <ShoppingBag size={16} strokeWidth={2} />
-            Add to Cart
+            {added ? (
+              <>
+                <Check size={16} strokeWidth={2.5} />
+                Added!
+              </>
+            ) : (
+              <>
+                <ShoppingBag size={16} strokeWidth={2} />
+                Add to Cart
+              </>
+            )}
           </button>
         </footer>
       </div>
@@ -252,16 +191,53 @@ function PlantCard({ plant, index }) {
 }
 
 function Plants() {
+  const [plantsData, setPlantsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchPlants() {
+      try {
+        const res = await fetch("/api/plants");
+        const data = await res.json();
+        if (res.ok) {
+          setPlantsData(data.plants);
+        } else {
+          setError(data.message || "Failed to load plants");
+        }
+      } catch (err) {
+        setError("Error connecting to server. Make sure the backend is running.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPlants();
+  }, []);
+
   return (
     <section className="w-full min-h-screen bg-[#F9FAF9] font-sans pt-28 md:pt-28 pb-16 md:pb-20 relative z-10">
       <div className="max-w-[1500px] mx-auto px-6 md:px-12 lg:px-20">
         <CollectionHeader />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6 lg:gap-8">
-          {PLANTS_DATA.map((plant, index) => (
-            <PlantCard key={plant.id} plant={plant} index={index} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center py-20 text-[#1a3c28]">
+            <p className="animate-pulse font-serif text-2xl">Growing catalogue...</p>
+          </div>
+        ) : error ? (
+          <div className="flex justify-center py-20 text-red-600">
+            <p className="font-serif text-xl">{error}</p>
+          </div>
+        ) : plantsData.length === 0 ? (
+          <div className="flex justify-center py-20 text-[#1a3c28]/60">
+            <p className="font-serif text-xl">No plants available in the collection right now.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6 lg:gap-8">
+            {plantsData.map((plant, index) => (
+              <PlantCard key={plant._id || plant.id} plant={plant} index={index} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

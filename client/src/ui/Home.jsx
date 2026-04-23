@@ -12,7 +12,7 @@ export default function HomePage() {
     <div className="font-sans text-[#1A3826] antialiased selection:bg-[#c5ebd4] selection:text-[#1A3826] relative bg-[#eef2ef]">
       {/* 1. THE SEAMLESS MASTER BACKGROUND - FIXED */}
       <div
-        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-[0]"
+        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-[0] opacity-30 saturate-50"
         style={{
           backgroundImage:
             "url('https://images.unsplash.com/photo-1604762524889-3e2fcc145683?q=80&w=2071&auto=format&fit=crop')",
