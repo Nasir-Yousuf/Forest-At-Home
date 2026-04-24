@@ -23,9 +23,17 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: function() { return !this.googleId; }, // Only required if not a google user
       minlength: [8, "Password must be at least 8 characters"],
-      select: false, // never returned in queries by default
+      select: false,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows multiple nulls (for non-google users)
+    },
+    image: {
+      type: String,
     },
     address: {
       type: String,
@@ -36,6 +44,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     zip: {
+      type: String,
+      trim: true,
+    },
+    gps: {
       type: String,
       trim: true,
     },

@@ -30,7 +30,7 @@ async function createAdmin() {
       email: adminEmail,
       password: adminPassword,
       role: "admin",
-      phone: "01816550751",
+      phone: "018**********",
     });
 
     await admin.save();

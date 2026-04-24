@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser, clearError, selectAuthLoading, selectAuthError, selectIsLoggedIn } from "../auth/authSlice";
+import { loginUser, loginWithGoogle, clearError, selectAuthLoading, selectAuthError, selectIsLoggedIn } from "../auth/authSlice";
 import { Loader2 } from "lucide-react";
+import { useGoogleLogin } from "@react-oauth/google";
 
 // ==========================================
 // 1. CUSTOM SVG ICON (Crash-proof Google Logo)
@@ -149,6 +150,23 @@ function LoginForm() {
 // 4. CHILD COMPONENT: Alternative Logins
 // ==========================================
 function SocialLogins() {
+  const dispatch = useDispatch();
+  const isLoading = useSelector(selectAuthLoading);
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      // For useGoogleLogin, we usually get an access token. 
+      // However, @react-oauth/google's useGoogleLogin can be configured for implicit or auth code flow.
+      // If we want an ID Token (common for social login), we should use the standard GoogleLogin component 
+      // or exchange the access token for user info.
+      // Actually, standard practice for many MERN apps is sending the access token to backend 
+      // and let backend fetch the profile.
+      // But let's try the implicit flow and see what we get.
+      dispatch(loginWithGoogle({ accessToken: tokenResponse.access_token }));
+    },
+    onError: () => console.log("Google Login Failed"),
+  });
+
   return (
     <>
       <div className="flex items-center gap-4 my-6">
@@ -159,7 +177,12 @@ function SocialLogins() {
         <div className="h-[1px] flex-1 bg-[#1a3c28]/10"></div>
       </div>
 
-      <button className="w-full bg-white border border-[#1a3c28]/10 text-[#1a3c28] rounded-xl py-3.5 font-semibold text-sm md:text-base flex items-center justify-center gap-3 hover:bg-[#f4f7f5] transition-colors shadow-sm active:scale-[0.98]">
+      <button 
+        type="button"
+        disabled={isLoading}
+        onClick={() => handleGoogleLogin()}
+        className="w-full bg-white border border-[#1a3c28]/10 text-[#1a3c28] rounded-xl py-3.5 font-semibold text-sm md:text-base flex items-center justify-center gap-3 hover:bg-[#f4f7f5] transition-colors shadow-sm active:scale-[0.98] disabled:opacity-50"
+      >
         <GoogleIcon />
         Login with Google
       </button>

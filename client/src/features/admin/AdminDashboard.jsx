@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { selectToken, selectUser } from "../auth/authSlice";
 import { useNavigate, Navigate } from "react-router-dom";
-import { Loader2, PlusCircle, Package } from "lucide-react";
+import { Loader2, PlusCircle, Package, ShoppingBag } from "lucide-react";
 import AdminOrders from "./AdminOrders";
+import AdminPlants from "./AdminPlants";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("plants"); // "plants" | "orders"
+  const [activeTab, setActiveTab] = useState("inventory"); // "inventory" | "add" | "orders"
   const token = useSelector(selectToken);
   const user = useSelector(selectUser);
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function AdminDashboard() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
+  const [editingPlant, setEditingPlant] = useState(null);
   const [form, setForm] = useState({
     name: "",
     scientificName: "",
@@ -27,6 +29,37 @@ export default function AdminDashboard() {
     stock: "100",
     careLevel: "easy",
   });
+
+  const handleEdit = (plant) => {
+    setEditingPlant(plant);
+    setForm({
+      name: plant.name,
+      scientificName: plant.scientificName || "",
+      price: plant.price || "",
+      isFree: plant.isFree || false,
+      description: plant.description || "",
+      image: plant.image || "",
+      category: plant.category || "indoor",
+      stock: plant.stock || "100",
+      careLevel: plant.careLevel || "easy",
+    });
+    setActiveTab("add");
+  };
+
+  const resetForm = () => {
+    setEditingPlant(null);
+    setForm({
+      name: "",
+      scientificName: "",
+      price: "",
+      isFree: false,
+      description: "",
+      image: "",
+      category: "indoor",
+      stock: "100",
+      careLevel: "easy",
+    });
+  };
 
   if (!user || user.role !== "admin") {
     return <Navigate to="/" replace />;
@@ -74,8 +107,11 @@ export default function AdminDashboard() {
     setSuccessMsg("");
 
     try {
-      const res = await fetch("/api/plants", {
-        method: "POST",
+      const url = editingPlant ? `/api/plants/${editingPlant._id}` : "/api/plants";
+      const method = editingPlant ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -90,20 +126,12 @@ export default function AdminDashboard() {
       const data = await res.json();
 
       if (res.ok) {
-        setSuccessMsg("Plant added successfully!");
-        setForm({
-          name: "",
-          scientificName: "",
-          price: "",
-          isFree: false,
-          description: "",
-          image: "",
-          category: "indoor",
-          stock: "100",
-          careLevel: "easy",
-        });
+        setSuccessMsg(editingPlant ? "Plant updated successfully!" : "Plant added successfully!");
+        resetForm();
+        // Switch to inventory tab after adding/updating
+        setTimeout(() => setActiveTab("inventory"), 1500);
       } else {
-        setErrorMsg(data.message || "Failed to add plant");
+        setErrorMsg(data.message || `Failed to ${editingPlant ? "update" : "add"} plant`);
       }
     } catch (err) {
       setErrorMsg("Error connecting to server.");
@@ -114,37 +142,56 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#F9FAF9] pt-32 pb-24 px-4 font-sans text-[#1a3c28]">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <h1 className="text-3xl font-serif mb-8 text-[#1a3c28]">Admin Dashboard</h1>
         
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-[#1a3c28]/10 pb-4">
+        <div className="flex gap-4 mb-8 border-b border-[#1a3c28]/10 pb-4 overflow-x-auto">
           <button
-            onClick={() => setActiveTab("plants")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "plants"
+            onClick={() => setActiveTab("inventory")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
+              activeTab === "inventory"
                 ? "bg-[#1a3c28] text-white"
                 : "bg-transparent text-[#1a3c28]/60 hover:bg-[#eef2ef]"
             }`}
           >
-            <PlusCircle size={18} /> Add Plant
+            <Package size={18} /> Inventory
+          </button>
+          <button
+            onClick={() => {
+              resetForm();
+              setActiveTab("add");
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
+              activeTab === "add"
+                ? "bg-[#1a3c28] text-white"
+                : "bg-transparent text-[#1a3c28]/60 hover:bg-[#eef2ef]"
+            }`}
+          >
+            <PlusCircle size={18} /> {editingPlant ? "Edit Specimen" : "Add Specimen"}
           </button>
           <button
             onClick={() => setActiveTab("orders")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
               activeTab === "orders"
                 ? "bg-[#1a3c28] text-white"
                 : "bg-transparent text-[#1a3c28]/60 hover:bg-[#eef2ef]"
             }`}
           >
-            <Package size={18} /> View Orders
+            <ShoppingBag size={18} /> View Orders
           </button>
         </div>
 
-        {activeTab === "plants" && (
+        {activeTab === "inventory" && <AdminPlants onEdit={handleEdit} />}
+
+        {activeTab === "add" && (
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
-            <h2 className="text-xl font-serif mb-2 text-[#1a3c28]">New Collection Specimen</h2>
-            <p className="text-sm text-[#4a6053] mb-8">Add a new plant to the collection.</p>
+            <h2 className="text-xl font-serif mb-2 text-[#1a3c28]">
+              {editingPlant ? "Update Collection Specimen" : "New Collection Specimen"}
+            </h2>
+            <p className="text-sm text-[#4a6053] mb-8">
+              {editingPlant ? `Modifying ${editingPlant.name} details.` : "Add a new plant to the collection."}
+            </p>
 
         {successMsg && (
           <div className="bg-green-50 text-green-700 p-4 rounded-xl mb-6 text-sm font-medium">
@@ -216,7 +263,7 @@ export default function AdminDashboard() {
           </div>
 
           <button type="submit" disabled={isLoading} className="w-full bg-[#1a3c28] text-white py-4 rounded-xl font-medium hover:bg-[#112d20] transition flex items-center justify-center gap-2">
-            {isLoading ? <Loader2 className="animate-spin" size={18} /> : "Add Plant to Collection"}
+            {isLoading ? <Loader2 className="animate-spin" size={18} /> : (editingPlant ? "Update Specimen" : "Add Plant to Collection")}
           </button>
         </form>
           </div>

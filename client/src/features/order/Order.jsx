@@ -121,11 +121,29 @@ function OrderPage() {
     address: "",
     city: "",
     zip: "",
+    gps: user?.gps || "",
     country: "Bangladesh",
     bkashNumber: "",
     nagadNumber: "",
     transactionId: "",
   });
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setForm((prev) => ({ ...prev, gps: `${latitude}, ${longitude}` }));
+      },
+      (error) => {
+        alert("Unable to retrieve your location. Please check your permissions.");
+      }
+    );
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setIsHeaderVisible(true), 50);
@@ -161,6 +179,7 @@ function OrderPage() {
         city: form.city,
         zip: form.zip,
         country: form.country,
+        gps: form.gps,
       },
       paymentMethod,
     };
@@ -260,6 +279,17 @@ function OrderPage() {
                   </div>
                   <InputField label="City" id="city" placeholder="Dhaka" value={form.city} onChange={handleChange("city")} required />
                   <InputField label="ZIP / Postal Code" id="zip" placeholder="1213" value={form.zip} onChange={handleChange("zip")} required />
+                  <div className="sm:col-span-2 relative">
+                    <InputField label="GPS Coordinates (Latitude, Longitude)" id="gps" placeholder="23.8103, 90.4125" value={form.gps} onChange={handleChange("gps")} />
+                    <button 
+                      type="button" 
+                      onClick={handleGetLocation}
+                      className="absolute right-3 bottom-3 p-1 text-[#1a3c28]/60 hover:text-[#1a3c28] transition-colors"
+                      title="Fetch current location"
+                    >
+                      <MapPin size={18} />
+                    </button>
+                  </div>
                 </div>
               </section>
 
@@ -298,8 +328,8 @@ function OrderPage() {
 
                 {paymentMethod === "bkash" && (
                   <div className="space-y-4">
-                    <p className="text-[#4a6053] text-xs font-medium mb-2">Please send the total amount to our bKash merchant number: <strong>01816550751</strong></p>
-                    <InputField label="Your bKash Number" id="bkashNumber" placeholder="01816550751" value={form.bkashNumber} onChange={handleChange("bkashNumber")} required />
+                    <p className="text-[#4a6053] text-xs font-medium mb-2">Please send the total amount to our bKash merchant number: <strong>018**********</strong></p>
+                    <InputField label="Your bKash Number" id="bkashNumber" placeholder="018**********" value={form.bkashNumber} onChange={handleChange("bkashNumber")} required />
                     <InputField label="Transaction ID (TrxID)" id="transactionId" placeholder="8X2F..." value={form.transactionId} onChange={handleChange("transactionId")} required />
                   </div>
                 )}

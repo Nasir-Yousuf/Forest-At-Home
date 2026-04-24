@@ -8,9 +8,16 @@ import plantRoutes from "./routes/plantRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
 dotenv.config();
 
@@ -20,7 +27,10 @@ const PORT = process.env.PORT || 3000;
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:4173"],
+    origin:
+      process.env.NODE_ENV === "production"
+        ? true
+        : ["http://localhost:5173", "http://localhost:4173"],
     credentials: true,
   }),
 );
@@ -37,7 +47,8 @@ app.use((req, res, next) => {
 
     return res.status(503).json({
       status: "error",
-      message: "Database is not connected. Please check your credentials in .env",
+      message:
+        "Database is not connected. Please check your credentials in .env",
     });
   }
   next();
@@ -52,15 +63,28 @@ app.use("/api/upload", uploadRoutes);
 // Static uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
-// Health check
-app.get("/api/health", (_, res) =>
-  res.json({ status: "ok", time: new Date() }),
-);
+// ─── Production Configuration ────────────────────────────────────────────────
+if (process.env.NODE_ENV === "production") {
+  // Serve static files from the client's build folder
+  app.use(express.static(path.join(__dirname, "../client/dist")));
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
-});
+  // Any other route should serve the index.html from the dist folder
+  app.get("*", (req, res) => {
+    if (req.path.startsWith("/api/"))
+      return res.status(404).json({ message: "API route not found" });
+    res.sendFile(path.resolve(__dirname, "../client/dist", "index.html"));
+  });
+} else {
+  // Health check for development
+  app.get("/api/health", (_, res) =>
+    res.json({ status: "ok", time: new Date() }),
+  );
+
+  // 404 handler for development
+  app.use((req, res) => {
+    res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+  });
+}
 
 // Global error handler
 app.use((err, req, res, _next) => {
@@ -87,9 +111,6 @@ mongoose
     }
   });
 
-
-
 app.listen(PORT, () => {
   console.log(`🌿 Forest At Home server running on http://localhost:${PORT}`);
 });
-

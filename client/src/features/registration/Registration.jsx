@@ -23,8 +23,26 @@ const RegistrationForm = () => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm();
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setValue("gps", `${latitude}, ${longitude}`);
+      },
+      (error) => {
+        alert("Unable to retrieve your location. Please check your permissions.");
+      }
+    );
+  };
 
   const password = watch("password");
 
@@ -61,7 +79,7 @@ const RegistrationForm = () => {
     }`;
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4 py-12 font-sans selection:bg-[#1b3d2f] selection:text-white">
+    <div className="min-h-screen w-full bg-[#fcfdfc] flex items-start justify-center px-4 pt-32 pb-20 font-sans selection:bg-[#1b3d2f] selection:text-white">
       {/* Background Overlay */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
         <img
@@ -72,13 +90,13 @@ const RegistrationForm = () => {
       </div>
 
       {/* Main Card */}
-      <div className="relative z-10 w-full max-w-3xl bg-white rounded-xl shadow-xl border border-gray-100 p-8 md:p-12">
+      <div className="relative z-10 w-full max-w-3xl bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 p-8 md:p-12">
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-serif text-[#1b3d2f] mb-3">
             Begin Your Collection
           </h1>
-          <p className="text-gray-600 text-sm md:text-base">
+          <p className="text-[#4a6053] text-sm md:text-base font-medium">
             Create your curated herbarium account for a personalized botanical
             experience.
           </p>
@@ -91,11 +109,11 @@ const RegistrationForm = () => {
           </div>
         )}
 
-        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             {/* Personal Details Section */}
             <div className="space-y-4">
-              <h2 className="text-[11px] font-bold tracking-widest text-[#3d5a42] uppercase">
+              <h2 className="text-[10px] font-bold tracking-[0.2em] text-[#3d5a42] uppercase opacity-60">
                 Personal Details
               </h2>
 
@@ -208,7 +226,10 @@ const RegistrationForm = () => {
                     className={`${inputClass(false)} pr-10`}
                     {...register("gps")}
                   />
-                  <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 cursor-pointer hover:text-[#1b3d2f]" />
+                  <MapPin 
+                    onClick={handleGetLocation}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 cursor-pointer hover:text-[#1b3d2f] transition-colors" 
+                  />
                 </div>
               </div>
             </div>
@@ -298,22 +319,22 @@ const RegistrationForm = () => {
         </form>
 
         {/* Footer */}
-        <div className="mt-8 text-center space-y-8">
-          <p className="text-xs text-gray-600">
+        <div className="mt-8 text-center space-y-6">
+          <p className="text-xs text-[#4a6053] font-medium">
             Already a member?{" "}
             <Link
               to="/login"
-              className="text-[#1b3d2f] font-bold hover:underline"
+              className="text-[#1b3d2f] font-bold hover:opacity-70 transition-opacity border-b border-[#1b3d2f]"
             >
               Sign In
             </Link>
           </p>
 
-          <div className="flex flex-col items-center gap-4">
-            <Leaf className="w-5 h-5 text-[#3d5a42] opacity-80" />
-            <blockquote className="text-gray-700 italic font-serif text-sm max-w-sm mx-auto">
+          <div className="flex flex-col items-center gap-3">
+            <Leaf className="w-4 h-4 text-[#3d5a42] opacity-60" />
+            <blockquote className="text-[#4a6053] italic font-serif text-xs max-w-sm mx-auto leading-relaxed">
               "In every walk with nature, one receives far more than he seeks."
-              <span className="block mt-1 uppercase text-[10px] tracking-widest font-sans font-bold not-italic">
+              <span className="block mt-1 uppercase text-[9px] tracking-[0.2em] font-sans font-bold not-italic opacity-60">
                 — John Muir
               </span>
             </blockquote>

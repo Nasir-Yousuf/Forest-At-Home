@@ -116,6 +116,20 @@ export default function AdminOrders() {
                   {order.shippingAddress.city}, {order.shippingAddress.zip}
                 </p>
                 <p>{order.shippingAddress.country}</p>
+                {order.shippingAddress.gps && (
+                  <div className="mt-2 pt-2 border-t border-[#1a3c28]/5">
+                    <p className="font-bold text-[8px] uppercase tracking-widest text-[#1a3c28]/40 mb-1">GPS Location</p>
+                    <p className="font-mono text-[10px] mb-1">{order.shippingAddress.gps}</p>
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${order.shippingAddress.gps.replace(/\s/g, '')}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-[#1a3c28] hover:underline flex items-center gap-1 font-bold"
+                    >
+                      <MapPin size={10} /> View on Map
+                    </a>
+                  </div>
+                )}
               </div>
               <div>
                 <p className="font-bold uppercase tracking-widest mb-1 text-[#1a3c28]/60 text-[9px]">

@@ -13,6 +13,7 @@ const shippingAddressSchema = new mongoose.Schema({
   city: { type: String, required: true },
   zip: { type: String, required: true },
   country: { type: String, default: "Bangladesh" },
+  gps: { type: String },
 });
 
 const orderSchema = new mongoose.Schema(

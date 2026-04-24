@@ -1,5 +1,8 @@
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ─── Helper: Sign JWT ────────────────────────────────────────────────────────
 function signToken(id) {
@@ -29,7 +32,7 @@ function sendToken(user, statusCode, res) {
 // ─── Register ────────────────────────────────────────────────────────────────
 export async function register(req, res, next) {
   try {
-    const { name, email, password, phone, address, city, zip } = req.body;
+    const { name, email, password, phone, address, city, zip, gps } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) {
@@ -44,6 +47,7 @@ export async function register(req, res, next) {
       address,
       city,
       zip,
+      gps,
     });
 
     sendToken(user, 201, res);
@@ -80,4 +84,58 @@ export async function login(req, res, next) {
 // ─── Get Current User (me) ───────────────────────────────────────────────────
 export async function getMe(req, res) {
   res.json({ status: "success", user: req.user });
+}
+
+// ─── Google Login ────────────────────────────────────────────────────────────
+export async function googleLogin(req, res, next) {
+  try {
+    const { idToken, accessToken } = req.body;
+    let email, name, picture, googleId;
+
+    if (idToken) {
+      const ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      email = payload.email;
+      name = payload.name;
+      picture = payload.picture;
+      googleId = payload.sub;
+    } else if (accessToken) {
+      // Fetch user info from Google's userinfo endpoint
+      const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
+      const data = await response.json();
+      if (!response.ok) throw new Error("Failed to fetch Google profile");
+      
+      email = data.email;
+      name = data.name;
+      picture = data.picture;
+      googleId = data.sub;
+    } else {
+      return res.status(400).json({ message: "No Google token provided." });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user if they don't exist
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        image: picture,
+      });
+    } else if (!user.googleId) {
+      // If user exists but was registered via email, link the accounts
+      user.googleId = googleId;
+      if (!user.image) user.image = picture;
+      await user.save({ validateBeforeSave: false });
+    }
+
+    sendToken(user, 200, res);
+  } catch (err) {
+    console.error("Google Auth Error:", err);
+    res.status(401).json({ message: "Google authentication failed." });
+  }
 }
