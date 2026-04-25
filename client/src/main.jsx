@@ -6,7 +6,7 @@ import store from "./store.js";
 import "./index.css";
 import App from "./App.jsx";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "unconfigured_client_id";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
