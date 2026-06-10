@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectToken } from "../auth/authSlice";
-import { Loader2, Package, Check, X } from "lucide-react";
+import { Loader2, Package, Check, X, MapPin } from "lucide-react";
 
 export default function AdminOrders() {
   const token = useSelector(selectToken);
@@ -43,7 +43,7 @@ export default function AdminOrders() {
       });
       if (res.ok) {
         setOrders((prev) =>
-          prev.map((o) => (o._id === id ? { ...o, status } : o))
+          prev.map((o) => (o._id === id ? { ...o, status } : o)),
         );
       }
     } catch (err) {
@@ -98,8 +98,8 @@ export default function AdminOrders() {
                   order.status === "pending"
                     ? "bg-yellow-100 text-yellow-800"
                     : order.status === "shipped"
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-green-100 text-green-800"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-green-100 text-green-800"
                 }`}
               >
                 {order.status}
@@ -118,11 +118,15 @@ export default function AdminOrders() {
                 <p>{order.shippingAddress.country}</p>
                 {order.shippingAddress.gps && (
                   <div className="mt-2 pt-2 border-t border-[#1a3c28]/5">
-                    <p className="font-bold text-[8px] uppercase tracking-widest text-[#1a3c28]/40 mb-1">GPS Location</p>
-                    <p className="font-mono text-[10px] mb-1">{order.shippingAddress.gps}</p>
-                    <a 
-                      href={`https://www.google.com/maps/search/?api=1&query=${order.shippingAddress.gps.replace(/\s/g, '')}`} 
-                      target="_blank" 
+                    <p className="font-bold text-[8px] uppercase tracking-widest text-[#1a3c28]/40 mb-1">
+                      GPS Location
+                    </p>
+                    <p className="font-mono text-[10px] mb-1">
+                      {order.shippingAddress.gps}
+                    </p>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${order.shippingAddress.gps.replace(/\s/g, "")}`}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#1a3c28] hover:underline flex items-center gap-1 font-bold"
                     >

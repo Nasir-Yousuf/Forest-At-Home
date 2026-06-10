@@ -1,4 +1,6 @@
-🌱 Forest at Home
+# 🌱 Forest at Home
+
+**🔗 Live Project:** [https://forest-at-home.onrender.com/](https://forest-at-home.onrender.com/)
 
 Forest at Home is a modern, interactive e-commerce web application for buying indoor plants.
 The project focuses on creating a visually immersive, nature-inspired experience using animations, clean UI, and scalable frontend architecture.
@@ -58,10 +60,18 @@ This project is part of my journey to:
 📸 Future Improvements
 • Payment integration (Stripe or similar)
 • User authentication & profiles
-• Admin dashboard for managing products
 • AI-based plant recommendations
 
-🙋‍♂️ About Me
+## 🔐 Admin Access (For Reviewers)
+
+To demonstrate the content management capabilities, you can log in as an admin to test adding new collections, editing products, and managing the store.
+
+Go to the [Live Project](https://forest-at-home.onrender.com/) and use the following demo credentials to log in:
+
+- **Email:** `demo@admin.com`
+- **Password:** `admin123`
+
+## 🙋‍♂️ About Me
 
 I’m currently learning full-stack development and building real-world projects to prepare for internship opportunities.
 • Focus: React, Next.js, and AI-integrated applications
